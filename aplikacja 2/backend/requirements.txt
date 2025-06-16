@@ -1,0 +1,7 @@
+Flask
+python-dotenv
+requests
+flask-cors
+flask-login
+Flask-SQLAlchemy
+Flask-WTF

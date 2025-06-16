@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Florownik</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant&family=Lugrasimo&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+
+  <div class="header">
+    <div class="hamburger" onclick="toggleMenu()">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <div class="title">florownik</div>
+  
+    <div class="side-menu" id="sideMenu" style="display: none;">
+      <div class="menu-icon icon-close" onclick="toggleMenu()">
+        <img src="zamknij_menu.jpg" alt="Zamknij menu" width="40" height="40">
+      </div>
+    
+      <div class="menu-icons-wrapper">
+        <div class="menu-icon icon-base" onclick="goToMainView()">
+          <img src="baza.jpg" alt="Baza roślin" width="201" height="201">
+        </div>
+    
+        <div class="menu-icon icon-calendar" onclick="goToCalendarView()">
+          <img src="kalendarz.jpg" alt="Kalendarz" width="100" height="100">
+        </div>
+    
+        <div class="menu-icon icon-diary">
+          <img src="dziennik.jpg" alt="Dziennik" width="100" height="100">
+        </div>
+    
+        <div class="menu-icon icon-guide">
+          <img src="poradnik.jpg" alt="Poradnik" width="100" height="100">
+        </div>
+      </div>
+    
+      <div class="menu-icon icon-logout" onclick="logout()">
+        <img src="wyloguj.jpg" alt="Wyloguj" width="66" height="66">
+      </div>
+    </div>    
+  </div>
+
+  <div class="auth-wrapper">
+    <div class="container">
+      <!-- Formularz logowania -->
+      <div id="loginForm" class="form-section active">
+        <h2>Witaj</h2>
+        <form onsubmit="handleLogin(event)" autocomplete="off" style="display: contents;">
+          <div class="form-group">
+            <label for="loginUsername">Nazwa użytkownika</label>
+            <input type="text" id="loginUsername" required>
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Hasło</label>
+            <input type="password" id="loginPassword" required>
+            <div class="password-toggle" onclick="togglePassword('loginPassword')">Pokaż/ukryj hasło</div>
+          </div>
+          <button type="submit">Zaloguj</button>
+        </form>
+        <div class="toggle-link" onclick="switchForm()">Nie masz konta? Zarejestruj się</div>
+      </div>
+
+      <!-- Formularz rejestracji -->
+      <div id="registerForm" class="form-section">
+        <h2>Załóż konto</h2>
+        <form onsubmit="handleRegister(event)" style="display: contents;">
+          <div class="form-group">
+            <label for="registerUsername">Nazwa użytkownika</label>
+            <input type="text" id="registerUsername" required>
+          </div>
+          <div class="form-group">
+            <label for="registerEmail">E-mail</label>
+            <input type="email" id="registerEmail" required>
+          </div>
+          <div class="form-group">
+            <label for="registerPassword">Hasło</label>
+            <input type="password" id="registerPassword" required>
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">Powtórz hasło</label>
+            <input type="password" id="confirmPassword" required>
+            <div class="password-toggle" onclick="togglePassword('registerPassword', 'confirmPassword')">Pokaż/ukryj hasło</div>
+          </div>
+          <button type="submit">Zarejestruj się</button>
+        </form>
+        <div class="toggle-link" onclick="switchForm()">Masz już konto? Zaloguj się</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Widok główny -->
+  <div id="mainView" class="app-view" style="display: none;">
+    <button class="add-plant-button" onclick="showSearchView()">
+      <div class="add-plant-text">+ dodaj roślinę</div>
+    </button>
+
+    <div class="content" id="nocontent">
+      <img id="plant-image" class="plant-image" src="ikona_szara.jpg" alt="Obrazek rośliny" />
+      <div class="no-plants">brak dodanych roślin</div>
+    </div>
+
+    <div class="plant-grid" id="mainPlantGrid"></div>
+  </div>
+
+  <!-- Widok wyszukiwarki -->
+  <div id="searchView" class="search-view" style="display: none;">
+    <div class="back-button" onclick="goBackToMain()">
+        &#8592; wróć
+    </div>      
+    <div class="search-bar">
+      <i class="material-icons">search</i>
+      <input id="plantSearchInput" type="text" placeholder="wyszukaj roślinę">
+    </div>
+  
+    <!-- Kafelki roślin -->
+  <div class="plant-grid" id="plantGrid">
+    <!--<div class="plant-tile" data-name="nazwa rośliny" onclick="openPlantModal(this, false)"></div> -->
+    <!-- dodaj więcej kafelków -->
+  </div>
+  
+  <!-- Modal szczegółów rośliny -->
+  <div class="plant-details-modal" style="display: none;">
+    <div class="plant-header">
+      <div class="plant-name" id="plant-name">nazwa rośliny</div>
+      <img src="zamknij.jpg" class="modal-close-btn" alt="Zamknij" onclick="closePlantModal()" />
+    </div>
+  
+    <div class="plant-main-content">
+      <div class="plant-image-box"></div>
+      
+      <div class="calendar-reminders">
+        <p class="reminder-title">dodaj przypomnienie do kalendarza:</p>
+        <div class="checkbox-section vertical-layout">
+          <label for="watering">częstotliwość i pora podlewania</label>
+          <input type="checkbox" id="watering" class="plant-checkbox" data-type="watering" />
+      
+          <label for="sunlight">wymagania świetlne</label>
+          <input type="checkbox" id="sunlight" class="plant-checkbox" data-type="sunlight" />
+      
+          <label for="pruning">częstotliwość i okres przycinania</label>
+          <input type="checkbox" id="pruning" class="plant-checkbox" data-type="pruning" />
+      
+          <label for="life_cycle">cykl życiowy rośliny</label>
+          <input type="checkbox" id="life_cycle" class="plant-checkbox" data-type="life_cycle" />
+        </div>
+      </div>
+      
+      
+      <!--<div class="calendar-reminders">
+        <p>dodaj przypomnienie do kalendarza:</p>
+        <ul>
+          <li><label class="checkbox"><input type="checkbox" class="plant-checkbox" data-type="watering" /> częstotliwość i pora podlewania</label></li>
+          <li><label class="checkbox"><input type="checkbox" class="plant-checkbox" data-type="sunlight" /> wymagania świetlne</label></li>
+          <li><label class="checkbox"><input type="checkbox" class="plant-checkbox" data-type="pruning" /> częstotliwość i okres przycinania</label></li>
+          <li><label class="checkbox"><input type="checkbox" class="plant-checkbox" data-type="life_cycle" /> cykl życiowy rośliny</label></li>
+        </ul>
+        
+        <ul>
+          <li>częstotliwość i preferowana pora podlewania <span class="checkbox"></span></li>
+          <li>wymagania świetlne <span class="checkbox"></span></li>
+          <li>częstotliwość i okres przycinania <span class="checkbox"></span></li>
+          <li>aktualny cykl życiowy rośliny <span class="checkbox"></span></li>
+        </ul>
+      </div>-->
+    </div>
+  
+    <div class="plant-description" id="plant-description">
+        <ul>
+          <li>ilość światła</li>
+          <li>typ gleby</li>
+          <li>odporność na suszę</li>
+          <li>tempo wzrostu</li>
+          <li>maksymalna wysokość</li>
+          <li>kolor liści/kwiatów</li>
+        </ul>
+    </div>
+  
+    <button class="add-plant-btn" onclick="addPlantToGrid()">
+      <div class="add-plant-btn-text">+ dodaj roślinę</div>
+    </button>
+    <button class="confirm-edit-btn" onclick="confirmEdit()">
+      <img src="ok_button.jpg" alt="Zapisz zmiany i zamknij" />
+    </button>
+  </div>
+</div>
+
+<!-- Widok kalendarza -->
+<div id="calendarView" class="app-view" style="display: none; flex-direction: column; height: 100vh;">
+  <div class="calendar-container">
+    <div class="calendar-nav">
+      <button class="calendar-button" onclick="changeMonth(-1)">&lt;</button>
+      <span id="monthYear"></span>
+      <button class="calendar-button" onclick="changeMonth(1)">&gt;</button>
+    </div>
+
+    <div class="calendar-grid" id="calendar">
+      <div class="weekday">pn.</div>
+      <div class="weekday">wt.</div>
+      <div class="weekday">śr.</div>
+      <div class="weekday">czw.</div>
+      <div class="weekday">pt.</div>
+      <div class="weekday">sb.</div>
+      <div class="weekday">ndz.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Widok dodawania notatki -->
+<div id="noteView" class="note-view" style="display: none;">
+  <button class="add-note-top">
+    <div class="add-note-text">+ dodaj notatkę</div>
+  </button>
+  <div class="note-form-container">
+    <div class="note-title-bar">
+      <div class="note-title">Tytuł</div>
+    </div>
+    <div class="note-textarea">
+    </div>
+    <div class="note-actions">
+      <button class="insert-photo-btn">wstaw zdjęcie</button>
+      <button class="submit-note-btn">+ dodaj notatkę</button>
+    </div>
+  </div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
+
+
+
