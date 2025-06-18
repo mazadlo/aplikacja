@@ -1,20 +1,71 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <title>{% block title %}Florownik{% endblock %}</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Florownik{% endblock %}</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant&family=Lugrasimo&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <ul>
-          {% for category, message in messages %}
-            <li class="{{ category }}">{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
 
-    {% block content %}{% endblock %}
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="placeholder"></div>
+      <h1 class="topbar-title">Florownik</h1>
+      <div class="user-greeting">Użytkownik {{ current_user.username }}</div>
+    </div>
+  </header>
+
+  <!-- Hamburger menu -->
+  <div class="hamburger" onclick="toggleMenu()">
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+
+  <!-- Side menu -->
+  <div class="side-menu" id="sideMenu">
+    <div class="menu-icon icon-close" onclick="toggleMenu()">
+      <img src="{{ url_for('static', filename='zamknij_menu.jpg') }}" alt="Zamknij menu" width="40" height="40">
+    </div>
+
+    <div class="menu-icons-wrapper">
+      <div class="menu-icon icon-base" onclick="goToMainView()">
+        <img src="{{ url_for('static', filename='baza.jpg') }}" alt="Baza roślin" width="201" height="201">
+      </div>
+      <div class="menu-icon icon-calendar" onclick="goToCalendarView()">
+        <img src="{{ url_for('static', filename='kalendarz.jpg') }}" alt="Kalendarz" width="100" height="100">
+      </div>
+      <div class="menu-icon icon-diary" onclick="goToNoteView()">
+        <img src="{{ url_for('static', filename='dziennik.jpg') }}" alt="Dziennik" width="100" height="100">
+      </div>
+      <div class="menu-icon icon-guide">
+        <img src="{{ url_for('static', filename='poradnik.jpg') }}" alt="Poradnik" width="100" height="100">
+      </div>
+    </div>
+
+    <div class="menu-icon icon-logout" onclick="logout()">
+      <img src="{{ url_for('static', filename='wyloguj.jpg') }}" alt="Wyloguj" width="66" height="66">
+    </div>
+  </div>
+
+  <!-- {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flash-messages">
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %} -->
+
+
+  {% block content %}
+  {% endblock %}
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

@@ -5,3 +5,4 @@ flask-cors
 flask-login
 Flask-SQLAlchemy
 Flask-WTF
+email-validator

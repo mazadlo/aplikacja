@@ -1,14 +1,117 @@
 {% extends 'base.html' %}
 {% block title %}Rejestracja{% endblock %}
+
 {% block content %}
-    <h2>Rejestracja</h2>
-    <form method="POST">
-        {{ form.hidden_tag() }}
-        {{ form.username.label }} {{ form.username(size=32) }}<br>
-        {{ form.email.label }} {{ form.email(size=32) }}<br>
-        {{ form.password.label }} {{ form.password(size=32) }}<br>
-        {{ form.confirm_password.label }} {{ form.confirm_password(size=32) }}<br>
-        {{ form.submit() }}
-    </form>
-    <p>Masz już konto? <a href="{{ url_for('login') }}">Zaloguj się</a></p>
+  <div class="auth-wrapper">
+    <div class="container">
+      <div id="registerForm" class="form-section active">
+        <h2>Rejestracja</h2>
+        <!-- FLASH MESSAGES -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        <form method="POST">
+          {{ form.hidden_tag() }}
+
+          <div class="form-group">
+            {{ form.username.label }}
+            {{ form.username(class_='form-control', placeholder='Wpisz nazwę użytkownika') }}
+          </div>
+
+          <div class="form-group">
+            {{ form.email.label }}
+            {{ form.email(class_='form-control', placeholder='Wpisz adres e-mail') }}
+          </div>
+
+          <div class="form-group">
+            {{ form.password.label }}
+            <div class="password-wrapper">
+              {{ form.password(class_='form-control', id='registerPassword', placeholder='Wpisz hasło') }}
+              <span class="toggle-password" data-target="registerPassword" style="cursor:pointer;">
+                <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="#555" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="#555" stroke-width="2" viewBox="0 0 24 24" style="display:none;">
+                  <path d="M3 3l18 18M10.73 5.08A10.94 10.94 0 0 1 12 5c7 0 11 7 11 7a20.3 20.3 0 0 1-5.08 5.92M6.1 6.1A20.3 20.3 0 0 0 1 12s4 7 11 7a10.94 10.94 0 0 0 3.92-.73"/>
+                  <path d="M12 12a3 3 0 0 0 3 3M15 15l3.5 3.5"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            {{ form.confirm_password.label }}
+            <div class="password-wrapper">
+              {{ form.confirm_password(class_='form-control', id='confirmPassword', placeholder='Powtórz hasło') }}
+              <span class="toggle-password" data-target="confirmPassword" style="cursor:pointer;">
+                <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="#555" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="#555" stroke-width="2" viewBox="0 0 24 24" style="display:none;">
+                  <path d="M3 3l18 18M10.73 5.08A10.94 10.94 0 0 1 12 5c7 0 11 7 11 7a20.3 20.3 0 0 1-5.08 5.92M6.1 6.1A20.3 20.3 0 0 0 1 12s4 7 11 7a10.94 10.94 0 0 0 3.92-.73"/>
+                  <path d="M12 12a3 3 0 0 0 3 3M15 15l3.5 3.5"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-button">
+            {{ form.submit.label.text }}
+          </button>
+        </form>
+
+        <div class="toggle-link">
+          Masz już konto?
+          <a href="{{ url_for('login') }}">Zaloguj się</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .password-wrapper {
+      position: relative;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+    }
+
+    .toggle-password svg {
+      vertical-align: middle;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.toggle-password').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+          const targetId = toggle.getAttribute('data-target');
+          const input = document.getElementById(targetId);
+          const eyeOpen = toggle.querySelector('.eye-open');
+          const eyeClosed = toggle.querySelector('.eye-closed');
+
+          if (input.type === 'password') {
+            input.type = 'text';
+            eyeOpen.style.display = 'none';
+            eyeClosed.style.display = 'inline';
+          } else {
+            input.type = 'password';
+            eyeOpen.style.display = 'inline';
+            eyeClosed.style.display = 'none';
+          }
+        });
+      });
+    });
+  </script>
 {% endblock %}

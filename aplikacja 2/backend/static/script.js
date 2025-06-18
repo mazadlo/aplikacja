@@ -88,35 +88,62 @@ function switchForm() {
     document.querySelector('.plant-details-modal').style.display = 'none';
     }
 
-      function addPlantToGrid() {
-      const name = document.getElementById('plant-name').textContent;
-      const description = document.getElementById('plant-description').textContent;
+    //   function addPlantToGrid() {
+    //   const name = document.getElementById('plant-name').textContent;
+    //   const description = document.getElementById('plant-description').textContent;
     
-      const tile = document.createElement('div');
-      tile.classList.add('plant-tile');
-      tile.dataset.name = name;
-      tile.dataset.description = description;
+    //   const tile = document.createElement('div');
+    //   tile.classList.add('plant-tile');
+    //   tile.dataset.name = name;
+    //   tile.dataset.description = description;
     
-      tile.onclick = function () {
-        openPlantModal(this, true);
-      };
+    //   tile.onclick = function () {
+    //     openPlantModal(this, true);
+    //   };
     
-      document.getElementById('mainPlantGrid').appendChild(tile);
-      document.getElementById('nocontent').style.display = 'none';
-      closePlantModal();
-      document.getElementById('searchView').style.display = 'none';
-      document.getElementById('mainView').style.display = 'flex';
+    //   document.getElementById('mainPlantGrid').appendChild(tile);
+    //   document.getElementById('nocontent').style.display = 'none';
+    //   closePlantModal();
+    //   document.getElementById('searchView').style.display = 'none';
+    //   document.getElementById('mainView').style.display = 'flex';
     
-      savePlantReminders(name); // ⬅️ dodane
-    }
+    //   savePlantReminders(name); // ⬅️ dodane
+    // }
+
+function addPlantToGrid() {
+  const name = document.getElementById('plant-name').textContent;
+  const description = document.getElementById('plant-description').textContent;
+
+  const tile = document.createElement('div');
+  tile.classList.add('plant-tile');
+  tile.dataset.name = name;
+  tile.dataset.description = description;
+
+  tile.innerHTML = `
+    <div style="text-align:center;">
+      <img src="${currentSearchedPlant?.image || 'ikona_szara.jpg'}" style="max-width: 100%; max-height: 100px; border-radius: 10px;">
+      <div style="margin-top: 10px; font-size: 1.2rem;">${name}</div>
+    </div>
+  `;
+
+  tile.onclick = function () {
+    openPlantModal(this, true);
+  };
+
+  document.getElementById('mainPlantGrid').appendChild(tile);
+  document.getElementById('nocontent').style.display = 'none';
+  closePlantModal();
+  document.getElementById('searchView').style.display = 'none';
+  document.getElementById('mainView').style.display = 'flex';
+
+  savePlantReminders(name);
+}
     
 function confirmEdit() {
   const name = document.getElementById('plant-name').textContent;
   savePlantReminders(name); // nadpisz stare
   closePlantModal();
 }
-
-
 
 function toggleMenu() {
   const menu = document.getElementById("sideMenu");
@@ -383,11 +410,18 @@ function switchView(viewId) {
         };
         
     
-        tile.innerHTML = `
-        <div style="text-align:center;">
-          <div style="margin-top: 10px; font-size: 1.2rem;">${plant.name}</div>
-        </div>
-      `;
+      //   tile.innerHTML = `
+      //   <div style="text-align:center;">
+      //     <div style="margin-top: 10px; font-size: 1.2rem;">${plant.name}</div>
+      //   </div>
+      // `;
+
+    tile.innerHTML = `
+      <div style="text-align:center;">
+        <img src="${plant.image || 'ikona_szara.jpg'}" alt="${plant.name}" style="max-width: 100%; max-height: 100px; border-radius: 10px;">
+        <div style="margin-top: 10px; font-size: 1.2rem;">${plant.name}</div>
+      </div>
+    `;
     
         plantGrid.appendChild(tile);
       });
@@ -396,10 +430,10 @@ function switchView(viewId) {
     let reminders = [];
     function renderReminders() {
       const icons = {
-        watering: "podlewanie.jpg",
-        pruning: "przycinanie.jpg",
-        sunlight: "swiatlo.jpg",
-        life_cycle: "cykl.jpg"
+        watering: "/static/podlewanie.jpg",
+        pruning: "/static/przycinanie.jpg",
+        sunlight: "/static/swiatlo.jpg",
+        life_cycle: "/static/cykl.jpg"
       };
 
       const monthMap = {
@@ -527,32 +561,9 @@ function savePlantReminders(name) {
   renderCalendar();
 
 } 
-
 function logout() {
   if (confirm("Czy na pewno chcesz się wylogować?")) {
-    localStorage.removeItem("user");
-
-    // Ukryj widoki aplikacji
-    document.querySelectorAll(".app-view").forEach(view => {
-      view.style.display = "none";
-    });
-
-    // Ukryj formularz rejestracji i wyłącz klasę active z niego
-    document.getElementById("registerForm").classList.remove("active");
-
-    // Pokaż formularz logowania i dodaj klasę active
-    const loginForm = document.getElementById("loginForm");
-    loginForm.classList.add("active");
-
-    // Pokaż kontener formularzy
-    const authWrapper = document.querySelector(".auth-wrapper");
-    if (authWrapper) {
-      authWrapper.style.display = "";  // albo '' jeśli chcesz używać CSS domyślnego
-    }
-    // Wyczyść pola formularza logowania
-    document.getElementById("loginUsername").value = "";
-    document.getElementById("loginPassword").value = "";
+    window.location.href = "/logout";
   }
 }
-
 

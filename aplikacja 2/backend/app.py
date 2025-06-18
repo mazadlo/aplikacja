@@ -1,14 +1,13 @@
-#POBIERA Z DANYM DO KALENDARZA
-from flask import Flask, request, jsonify, send_from_directory, json, render_template, redirect, url_for, flash
+# POBIERA Z DANYM DO KALENDARZA
+from flask import Flask, request, jsonify, render_template, redirect, url_for, flash
 from flask_cors import CORS
 import os
 import requests
-import time
+# import time
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
-from requests.adapters import HTTPAdapter #dodane
-from urllib3.util.retry import Retry # dodane
-from flask_sqlalchemy import SQLAlchemy
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from forms import LoginForm, RegisterForm
 from models import db, User
@@ -19,14 +18,18 @@ CACHE_DURATION = timedelta(hours=6)
 
 load_dotenv()
 
-app = Flask(__name__, static_folder="../FLOROWNIK", static_url_path="/")
+# app = Flask(__name__, static_folder="../FLOROWNIK", static_url_path="/")
+app = Flask(__name__, template_folder='templates')
 CORS(app)  # Pozwala frontendowi się łączyć
 
-#logowanie
+# logowanie
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+# print("SECRET_KEY:", app.config['SECRET_KEY'])
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'users.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+app.config['WTF_CSRF_ENABLED'] = True
 
 PERENUAL_KEY = os.getenv("PERENUAL_API_KEY")
 TREFLE_KEY = os.getenv("TREFLE_API_KEY")
@@ -47,91 +50,24 @@ def create_session():
 trefle_session = create_session()
 perenual_session = create_session()
 
-# --- Retry-aware fetch ---
-def get_with_retry(url, session, retries=3):
-    for _ in range(retries):
-        res = session.get(url)
-        if res.status_code == 429:
-            retry_after = int(res.headers.get("Retry-After", "1"))
-            print(f"429 - Zbyt wiele zapytań. Czekam {retry_after}s...")
-            time.sleep(retry_after)
-        else:
-            return res
-    return res
-
-#inicjalizacja bazy danych i menadzer logowania
+# inicjalizacja bazy danych, importuj db z models.py
 db.init_app(app)
 
+# menadżer logowania
 login_manager = LoginManager()
-login_manager.init_app(app)
 login_manager.login_view = 'login'
+login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# @app.route('/register', methods=['POST'])
-# def api_register():
-#     if request.is_json:
-#         data = request.get_json()
-#         username = data.get('username')
-#         email = data.get('email')
-#         password = data.get('password')
-
-#         if not username or not email or not password:
-#             return jsonify({"message": "Wszystkie pola są wymagane."}), 400
-
-#         existing_user = User.query.filter(
-#             (User.username == username) | (User.email == email)
-#         ).first()
-#         if existing_user:
-#             return jsonify({"message": "Użytkownik o podanym loginie lub email już istnieje."}), 409
-
-#         new_user = User(username=username, email=email)
-#         new_user.set_password(password)
-#         db.session.add(new_user)
-#         db.session.commit()
-
-#         return jsonify({"message": "Rejestracja zakończona sukcesem"}), 201
-#     return jsonify({"message": "Nieprawidłowy format danych"}), 400
-
-# @app.route('/login', methods=['POST'])
-# def api_login():
-#     if request.is_json:
-#         data = request.get_json()
-#         username = data.get('username')
-#         password = data.get('password')
-
-#         user = User.query.filter_by(username=username).first()
-
-#         if user and user.check_password(password):
-#             login_user(user, remember=True)
-#             return jsonify({"message": "Zalogowano pomyślnie"}), 200
-#         else:
-#             return jsonify({"message": "Nieprawidłowe dane logowania"}), 401
-#     return jsonify({"message": "Nieprawidłowy format danych"}), 400
-
-# @app.route('/login-page', methods=['GET'])
-# def login_page():  # jeśli chcesz zachować logowanie przez HTML
-#     form = LoginForm()
-#     return render_template('login.html', form=form)
-
-# @app.route('/logout')
-# @login_required
-# def logout():
-#     logout_user()
-#     return redirect(url_for('login'))
-
-# @app.route('/main')
-# @login_required
-# def main_view():
-#     return render_template('mainView.html', username=current_user.username)
-
-# #koniec logowanie
-
 @app.route("/")
 def index():
-    return send_from_directory(app.static_folder, "florownik.html")
+    if current_user.is_authenticated:
+        return redirect(url_for('florownik'))
+    else:
+        return redirect(url_for('login'))
 
 @app.route("/search")
 def search_plants():
@@ -336,16 +272,6 @@ def plant_details(plant_id):
         sunlight = safe_join(data.get("sunlight"))
 
         # #Obsługa pruning
-        # pruning = data.get("pruning_month")
-        # if isinstance(pruning, list) and pruning:
-        #     pruning_frequency = safe_get(pruning[0], "interval", "brak")
-        #     pruning_period = safe_join(safe_get(pruning[0], "month", []))
-        # elif isinstance(pruning, dict):
-        #     pruning_frequency = safe_get(pruning, "interval", "brak")
-        #     pruning_period = safe_join(safe_get(pruning, "month", []))
-        # else:
-        #     pruning_frequency = "brak"
-        #     pruning_period = "brak"
         pruning = data.get("pruning_month")
 
         if isinstance(pruning, list):
@@ -434,17 +360,35 @@ def plant_details(plant_id):
         print(f"! Błąd przy pobieraniu szczegółów rośliny: {e}")
         return jsonify({"error": "Nie udało się pobrać szczegółów rośliny"}), 500
 
+# flask login mechanizm
+
+@app.route('/florownik')
+@login_required
+def florownik():
+    print(">>> w florownik:", current_user)
+    return render_template('florownik.html', username=current_user.username)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
+        print("Czy formularz przesłany i poprawny?", form.validate_on_submit())
+        print("Błędy formularza:", form.errors)
         user = User.query.filter_by(username=form.username.data).first()
-        if user and user.check_password(form.password.data):
-            login_user(user, remember=form.remember.data)
-            flash('Zalogowano pomyślnie!', 'success')
-            return redirect(url_for('main_view'))
-        else:
+        if not user:
             flash('Nieprawidłowa nazwa użytkownika lub hasło.', 'danger')
+            return render_template('login.html', form=form)
+        if not user.check_password(form.password.data):
+            flash('Nieprawidłowa nazwa użytkownika lub hasło.', 'danger')
+            return render_template('login.html', form=form)
+        
+        login_user(user, remember=form.remember.data)
+        print(">>> login_user wywołany")
+        print(">>> current_user:", current_user)
+        print(">>> is_authenticated:", current_user.is_authenticated)
+        flash('Zalogowano pomyślnie!', 'success')
+        return redirect(url_for('florownik'))
+    
     return render_template('login.html', form=form)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -463,7 +407,12 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         flash('Rejestracja zakończona sukcesem. Możesz się teraz zalogować.', 'success')
+        print("Rejestracja OK, przekierowuję do loginu")  # debug
         return redirect(url_for('login'))
+    else:
+        print("Formularz nie przeszedł walidacji")
+        print(form.errors)  # pokaże błędy walidacji
+
     return render_template('register.html', form=form)
 
 @app.route('/logout')
@@ -473,10 +422,23 @@ def logout():
     flash('Wylogowano pomyślnie.', 'info')
     return redirect(url_for('login'))
 
-@app.route('/main')
-@login_required
-def main_view():
-    return render_template('mainView.html', username=current_user.username)
+@app.route('/debug/users')
+def debug_users():
+    db_path = os.path.join(os.getcwd(), 'users.db')
+    
+    if not os.path.exists(db_path):
+        return "Baza danych `users.db` nie istnieje.", 404
+
+    try:
+        users = User.query.all()
+        if not users:
+            return "Brak użytkowników w bazie danych."
+        user_list = [f"{user.id}: {user.username} ({user.email})" for user in users]
+        return "<br>".join(user_list)
+    except Exception as e:
+        return f"Błąd przy odczycie bazy: {e}", 500
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)

@@ -1,0 +1,118 @@
+<!-- templates/florownik.html -->
+{% extends 'base.html' %}
+
+{% block title %}Florownik{% endblock %}
+
+{% block content %}
+  {% if current_user.is_authenticated %}
+    <!-- Widok główny -->
+    <div id="mainView" class="app-view">
+      <button class="add-plant-button" onclick="showSearchView()">
+        <div class="add-plant-text">+ dodaj roślinę</div>
+      </button>
+      <div class="content" id="nocontent">
+        <img id="plant-image" class="plant-image" src="{{ url_for('static', filename='ikona_szara.jpg') }}" alt="Obrazek rośliny" />
+        <div class="no-plants">brak dodanych roślin</div>
+      </div>
+      <div class="plant-grid" id="mainPlantGrid"></div>
+    </div>
+
+    <!-- Widok wyszukiwarki -->
+    <div id="searchView" class="search-view" style="display: none;">
+      <div class="back-button" onclick="goBackToMain()">&#8592; wróć</div>
+      <div class="search-bar">
+        <i class="material-icons">search</i>
+        <input id="plantSearchInput" type="text" placeholder="wyszukaj roślinę">
+      </div>
+      <div class="plant-grid" id="plantGrid"></div>
+
+      <div class="plant-details-modal" style="display: none;">
+        <div class="plant-header">
+          <div class="plant-name" id="plant-name">nazwa rośliny</div>
+          <img src="{{ url_for('static', filename='zamknij.jpg') }}" class="modal-close-btn" alt="Zamknij" onclick="closePlantModal()" />
+        </div>
+
+        <div class="plant-main-content">
+          <div class="plant-image-box"></div>
+          <div class="calendar-reminders">
+            <p class="reminder-title">dodaj przypomnienie do kalendarza:</p>
+            <div class="checkbox-section vertical-layout">
+              <label for="watering">częstotliwość i pora podlewania</label>
+              <input type="checkbox" id="watering" class="plant-checkbox" data-type="watering" />
+              <label for="sunlight">wymagania świetlne</label>
+              <input type="checkbox" id="sunlight" class="plant-checkbox" data-type="sunlight" />
+              <label for="pruning">częstotliwość i okres przycinania</label>
+              <input type="checkbox" id="pruning" class="plant-checkbox" data-type="pruning" />
+              <label for="life_cycle">cykl życiowy rośliny</label>
+              <input type="checkbox" id="life_cycle" class="plant-checkbox" data-type="life_cycle" />
+            </div>
+          </div>
+        </div>
+
+        <div class="plant-description" id="plant-description">
+          <ul>
+            <li>ilość światła</li>
+            <li>typ gleby</li>
+            <li>odporność na suszę</li>
+            <li>tempo wzrostu</li>
+            <li>maksymalna wysokość</li>
+            <li>kolor liści/kwiatów</li>
+          </ul>
+        </div>
+
+        <button class="add-plant-btn" onclick="addPlantToGrid()">
+          <div class="add-plant-btn-text">+ dodaj roślinę</div>
+        </button>
+        <button class="confirm-edit-btn" onclick="confirmEdit()">
+          <img src="{{ url_for('static', filename='ok_button.jpg') }}" alt="Zapisz zmiany i zamknij" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Widok kalendarza -->
+    <div id="calendarView" class="app-view" style="display: none; flex-direction: column; height: 100vh;">
+      <div class="calendar-container">
+        <div class="calendar-nav">
+          <button class="calendar-button" onclick="changeMonth(-1)">&lt;</button>
+          <span id="monthYear"></span>
+          <button class="calendar-button" onclick="changeMonth(1)">&gt;</button>
+        </div>
+
+        <div class="calendar-grid" id="calendar">
+          <div class="weekday">pn.</div>
+          <div class="weekday">wt.</div>
+          <div class="weekday">śr.</div>
+          <div class="weekday">czw.</div>
+          <div class="weekday">pt.</div>
+          <div class="weekday">sb.</div>
+          <div class="weekday">ndz.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Widok notatek -->
+    <div id="noteView" class="note-view" style="display: none;">
+      <button class="add-note-top">
+        <div class="add-note-text">+ dodaj notatkę</div>
+      </button>
+      <div class="note-form-container">
+        <div class="note-title-bar">
+          <div class="note-title">Tytuł</div>
+        </div>
+        <div class="note-textarea"></div>
+        <div class="note-actions">
+          <button class="insert-photo-btn">wstaw zdjęcie</button>
+          <button class="submit-note-btn">+ dodaj notatkę</button>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <!-- Widok niezalogowanego użytkownika -->
+    <div class="auth-wrapper">
+      <div class="container">
+        <h2>Witaj w florowniku</h2>
+        <p><a href="{{ url_for('login') }}">Zaloguj się</a> lub <a href="{{ url_for('register') }}">Zarejestruj się</a>, aby korzystać z aplikacji.</p>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
